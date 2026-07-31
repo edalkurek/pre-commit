@@ -1,0 +1,21 @@
+tableName: NGI_REST_REMOTE_REGISTRIES
+columns:
+  serviceName: SERVICE_NAME
+  methodName: METHOD_NAME
+  testUrl: TEST_ENDPOINT_URL
+  uatUrl: UAT_ENDPOINT_URL
+  liveUrl: LIVE_ENDPOINT_URL
+environments:
+  testKeywords:
+    - "-tst"
+  uatKeywords:
+    - "-uat"
+  liveForbiddenKeywords:
+    - "-tst"
+    - "-uat"
+    - "-test"
+  normalizationKeywords:
+    - "-tst"
+    - "-uat"
+    - "-test"
+ignoreTrailingSlash: true
