@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+config="$repo_root/validator-config.yml"
+
+if [ -f "$repo_root/tools/sql-endpoint-validator.jar" ]; then
+  jar="$repo_root/tools/sql-endpoint-validator.jar"
+elif [ -f "$repo_root/target/sql-endpoint-validator.jar" ]; then
+  jar="$repo_root/target/sql-endpoint-validator.jar"
+else
+  echo "ERROR: sql-endpoint-validator.jar was not found." >&2
+  echo "Expected: tools/sql-endpoint-validator.jar or target/sql-endpoint-validator.jar" >&2
+  exit 1
+fi
+
+if [ ! -f "$config" ]; then
+  echo "ERROR: validator-config.yml was not found at repository root." >&2
+  exit 1
+fi
+
+if ! command -v java >/dev/null 2>&1; then
+  echo "ERROR: Java 17 or newer is required." >&2
+  exit 1
+fi
+
+files=$(git -c core.quotepath=false diff --cached --name-only --diff-filter=ACMR \
+  | grep -Ei '\.sql$' || true)
+
+[ -z "$files" ] && exit 0
+
+set --
+while IFS= read -r file; do
+  [ -f "$repo_root/$file" ] && set -- "$@" "$repo_root/$file"
+done <<EOF
+$files
+EOF
+
+[ "$#" -eq 0 ] || java -jar "$jar" --config "$config" "$@"
